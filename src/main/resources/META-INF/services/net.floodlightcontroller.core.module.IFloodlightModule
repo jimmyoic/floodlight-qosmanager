@@ -25,3 +25,4 @@ net.floodlightcontroller.core.test.MockThreadPoolService
 net.floodlightcontroller.mactracker.MACTracker
 net.floodlightcontroller.qos.QoS
 net.floodlightcontroller.firewall.Firewall
+net.floodlightcontroller.QoSManager.QoSManager

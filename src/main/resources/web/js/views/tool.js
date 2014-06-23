@@ -13,6 +13,110 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+     function clear(){
+        $("#ipsrc").val("");
+        $("#ipdst").val("");
+        $("#protocol").val("");
+        $("#queue").val("");
+        $("#priority").val("");
+     }
+   
+
+      var Create = {
+      autoOpen: false,
+      height: 300,
+      width: 350,
+      modal: true,
+      buttons: {
+        "Create a policy": function() {
+        var ipSrc       = $("#ipsrc").val();
+        var ipDst       = $("#ipdst").val();
+        var protocol    = $("#protocol").val();
+        var queue       = $("#queue").val();
+        var priority    = $("#priority").val();
+        var regIp = /([12]?\d{1,2}.){3}[12]?\d{1,2}/;
+        var pass = true;
+        if (!ipSrc.match(regIp) && !ipDst.match(regIp)) {
+                alert("[IP] At least define one from IP Source or IP Destination!");
+                pass=false;
+             
+        }
+        if (!protocol.toLowerCase().match(/0x06|6|0x11|17/)) {
+    		if (protocol.toLowerCase() == "tcp")
+     			protocol = "6";
+   			else if (protocol.toLowerCase() == "udp")
+        		protocol = "17";
+    		else {
+        		alert("[Protocol] Protocol should be TCP or UDP!");
+        		pass = false;
+    		}
+		}	
+        if (!queue.match(/\d/)){
+                
+                if(queue === ""){
+               
+                queue = "0";
+                }else{
+                alert("[queue] please input a integer ");
+                pass=false
+                }
+           }
+       if(!priority.match(/\d/)){
+            alert("[priority] please input a integer between 0 ~ 32767");
+            pass = false;
+       }
+       else if (parseInt(priority) < 0 || parseInt(priority) > 32767) {
+                alert("Priority should be 0~32767 !");
+                pass = false;
+        }
+        
+        if(pass == false) return;
+         
+        var name =       "ipSrc(" + ((ipSrc.match(regIp))?ipSrc:"-1") +
+                                ")ipDst(" + ((ipDst.match(regIp))?ipDst:"-1") +
+                                ")protocol(" + protocol +
+                                ")priority(" + priority +
+                                ")queue(" + queue +  ")";
+       
+        var sendInfo = '{"name":"'              + name          + '",' +
+                                        '"ip-src":"'    + ipSrc         + '",' +
+                                        '"ip-dst":"'    + ipDst         + '",' +
+                                        '"protocol":"'  + protocol      + '",' +
+                                        '"queue":"'     + queue         + '",' +
+                                        '"priority":"'  + priority      + '",' +
+                                        '"eth-type":"0x0800"}';
+        
+         $.ajax({
+                type: 'POST',
+                url: hackBase + "/wm/manager/qos/json",
+                dataType: "json",
+                data: sendInfo,
+                async: false,
+                success:function(msg) {
+                        console.log(msg);
+                },
+        });
+        
+         alert("Success to add policy!");
+         clear();
+        $( this ).dialog( "close" );
+       
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+           
+        }
+      },
+      close: function() {
+       clear();
+      }
+    };
+
+
+      
+        
+
+
 
 window.ToolListView = Backbone.View.extend({
 
@@ -51,6 +155,10 @@ window.ToolsListItemView = Backbone.View.extend({
 });
 
 
+
+
+
+
 window.ToolDetailsView = Backbone.View.extend({
 
 	initialize:function () {
@@ -61,7 +169,10 @@ window.ToolDetailsView = Backbone.View.extend({
     
     events:{
         "click #enable-button":"enableToolFunction",
-        "click #disable-button":"disableToolFunction"
+        "click #disable-button":"disableToolFunction",
+        "click #add-button":"addToolFunction",
+        "click #remove-button":"removeToolFunction"
+        
 		//TODO add / remove qos policies
     },
 
@@ -170,7 +281,18 @@ window.ToolDetailsView = Backbone.View.extend({
     		}
     	}
     },
-
+    
+    addToolFunction:function(event){
+         
+         $( "#dialog-form" ).dialog(Create).dialog( "open" );
+        
+    },
+    removeToolFunction:function(event){
+    },
+    
+    
+    
 });
+
 
 

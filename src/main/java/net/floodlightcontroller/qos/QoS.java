@@ -544,7 +544,8 @@ public class QoS implements IQoSService, IFloodlightModule,
 		logger.debug("Adding Policy to List and Storage");
 		//create the UID
 		policy.policyid = policy.genID();
-		
+		if (checkIfPolicyExists(policy, this.policies))
+			return;
 		int p = 0;
 		for (p = 0; p < this.policies.size(); p++){
 			//check if empy
@@ -588,29 +589,36 @@ public class QoS implements IQoSService, IFloodlightModule,
 		policyEntry.put(COLUMN_SERVICE, policy.service);
 		storageSource.insertRow(TABLE_NAME, policyEntry);
 		
+	}
+	
+	public void addPolicyToSwitch(QoSPolicy policy) {
 		/**
-		* TODO Morph this to use a String[] of switches
-		**/
-		
-		if (policy.sw.equals("all")){
-			logger.debug("Adding Policy {} to Entire Network", policy.toString());
+		 * TODO Morph this to use a String[] of switches
+		 **/
+
+		if (policy.sw.equals("all")) {
+			logger.debug("Adding Policy {} to Entire Network",
+					policy.toString());
 			addPolicyToNetwork(policy);
 		}
-		/** [NOTE] Note utilized yet, future revision used to "save" policies
-		 *  to the controller, then modified to be added to switched **/
-		else if (policy.sw.equals("none")){
+		/**
+		 * [NOTE] Note utilized yet, future revision used to "save" policies to
+		 * the controller, then modified to be added to switched
+		 **/
+		else if (policy.sw.equals("none")) {
 			logger.debug("Adding Policy {} to Controller", policy.toString());
 		}
-		//add to a specified switch b/c "all" not specified
-		else if(policy.sw.matches(dpidPattern)){
-			logger.debug("Adding policy {} to Switch {}", policy.toString(), policy.sw);
+		// add to a specified switch b/c "all" not specified
+		else if (policy.sw.matches(dpidPattern)) {
+			logger.debug("Adding policy {} to Switch {}", policy.toString(),
+					policy.sw);
 			// add appropriate hex string converted to a long type
 			addPolicy(policy, policy.sw);
-			}	
-		else{
-			logger.error("***Policy {} error at switch input {} ***" +
-					"", policy.toString(), policy.sw);
+		} else {
+			logger.error("***Policy {} error at switch input {} ***" + "",
+					policy.toString(), policy.sw);
 		}
+
 	}
 	
 	/**
@@ -884,5 +892,16 @@ public class QoS implements IQoSService, IFloodlightModule,
 				//}
 			}
 		}//else{logger.info("No Policies to Check Against PACKET_IN");}
+	}
+	private boolean checkIfPolicyExists(QoSPolicy policy,
+			List<QoSPolicy> policies) {
+		Iterator<QoSPolicy> pIter = policies.iterator();
+		while (pIter.hasNext()) {
+			QoSPolicy p = pIter.next();
+			if (policy.isSameAs(p) || policy.name.equals(p.name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

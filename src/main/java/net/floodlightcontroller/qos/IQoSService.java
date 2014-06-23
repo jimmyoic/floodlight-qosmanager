@@ -73,6 +73,10 @@ public interface IQoSService extends IFloodlightService {
     /**
      * adds policy to switch
      */
+    public void addPolicyToSwitch(QoSPolicy policy);
+    /**
+     * adds policy to storage
+     */
     public void addPolicy(QoSPolicy policy);
     
     /**

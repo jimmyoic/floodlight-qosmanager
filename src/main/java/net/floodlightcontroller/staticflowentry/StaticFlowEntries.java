@@ -143,7 +143,7 @@ public class StaticFlowEntries {
         entry.put(StaticFlowEntryPusher.COLUMN_ACTIVE, Boolean.toString(true));
         entry.put(StaticFlowEntryPusher.COLUMN_PRIORITY, Short.toString(fm.getPriority()));
         entry.put(StaticFlowEntryPusher.COLUMN_WILDCARD, Integer.toString(match.getWildcards()));
-        
+        entry.put(StaticFlowEntryPusher.COLUMN_IDLE_TIMEOUT,Short.toString(fm.getIdleTimeout()));
         if ((fm.getActions() != null) && (fm.getActions().size() > 0))
         	entry.put(StaticFlowEntryPusher.COLUMN_ACTIONS, StaticFlowEntries.flowModActionsToString(fm.getActions()));
         
