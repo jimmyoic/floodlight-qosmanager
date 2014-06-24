@@ -269,7 +269,7 @@ public class StaticFlowEntryPusher
                         || key.equals("id"))
                     continue; // already handled
                 // explicitly ignore timeouts and wildcards
-                if (  key.equals(COLUMN_HARD_TIMEOUT) ||
+                if ( 
                         key.equals(COLUMN_WILDCARD))
                     continue;
                 if ( key.equals(COLUMN_ACTIVE)) {
@@ -289,9 +289,11 @@ public class StaticFlowEntryPusher
                         );
                 } else if ( key.equals(COLUMN_PRIORITY)) {
                     flowMod.setPriority(U16.t(Integer.valueOf((String) row.get(COLUMN_PRIORITY))));
+                } else if(key.equals(COLUMN_HARD_TIMEOUT)){
+                	  flowMod.setHardTimeout(Short.valueOf(((String)(row.get(COLUMN_HARD_TIMEOUT)))));
                 } else if(key.equals(COLUMN_IDLE_TIMEOUT)){
-                	  flowMod.setIdleTimeout(Short.valueOf(((String)(row.get(COLUMN_IDLE_TIMEOUT)))));
-                } else { // the rest of the keys are for OFMatch().fromString()
+              	  flowMod.setHardTimeout(Short.valueOf(((String)(row.get(COLUMN_IDLE_TIMEOUT)))));
+                }else { // the rest of the keys are for OFMatch().fromString()
                     if (matchString.length() > 0)
                         matchString.append(",");
                     matchString.append(key + "=" + row.get(key).toString());

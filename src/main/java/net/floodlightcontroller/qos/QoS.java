@@ -628,6 +628,7 @@ public class QoS implements IQoSService, IFloodlightModule,
 	@Override
 	public void addPolicyToNetwork(QoSPolicy policy) {
 		OFFlowMod flow = policyToFlowMod(policy);
+		
 		logger.info("adding policy-flow {} to all switches",flow.toString());
 		//add to all switches
 		Map<Long, IOFSwitch> switches = floodlightProvider.getSwitches();
@@ -822,14 +823,14 @@ public class QoS implements IQoSService, IFloodlightModule,
 			//add the matches and actions and return
 			fm.setMatch(match)
 				.setActions(actions)
-				.setIdleTimeout((short) 0)  // infinite
-				.setHardTimeout((short) 0)  // infinite
+				.setIdleTimeout((short) 3)  // infinite
+				.setHardTimeout((short) 5)  // infinite
 				.setBufferId(OFPacketOut.BUFFER_ID_NONE)
 				.setFlags((short) 0)
 				.setOutPort(OFPort.OFPP_NONE.getValue())
 				.setPriority(policy.priority)
 				.setLengthU((short)OFFlowMod.MINIMUM_LENGTH + OFActionEnqueue.MINIMUM_LENGTH);
-				
+			  
 		}
 		else if(policy.queue == -1 && policy.service != null){
 			logger.info("This policy is a type of service policy");
@@ -856,8 +857,8 @@ public class QoS implements IQoSService, IFloodlightModule,
 			//add the matches and actions and return.class.ge
 			fm.setMatch(match)
 				.setActions(actions)
-				.setIdleTimeout((short) 0)  // infinite
-				.setHardTimeout((short) 0)  // infinite
+				.setIdleTimeout((short) 3)  // infinite
+				.setHardTimeout((short) 5)  // infinite
 				.setBufferId(OFPacketOut.BUFFER_ID_NONE)
 				.setFlags((short) 0)
 				.setOutPort(OFPort.OFPP_NONE.getValue())
