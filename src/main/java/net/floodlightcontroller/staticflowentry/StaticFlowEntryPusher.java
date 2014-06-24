@@ -292,7 +292,7 @@ public class StaticFlowEntryPusher
                 } else if(key.equals(COLUMN_HARD_TIMEOUT)){
                 	  flowMod.setHardTimeout(Short.valueOf(((String)(row.get(COLUMN_HARD_TIMEOUT)))));
                 } else if(key.equals(COLUMN_IDLE_TIMEOUT)){
-              	  flowMod.setHardTimeout(Short.valueOf(((String)(row.get(COLUMN_IDLE_TIMEOUT)))));
+              	  	  flowMod.setIdleTimeout(Short.valueOf(((String)(row.get(COLUMN_IDLE_TIMEOUT)))));
                 }else { // the rest of the keys are for OFMatch().fromString()
                     if (matchString.length() > 0)
                         matchString.append(",");
