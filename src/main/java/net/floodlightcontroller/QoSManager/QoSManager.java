@@ -320,9 +320,8 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 										.getSwitches().get(switchDPID);
 								short outPort = switchPortList.get(indx)
 										.getPortId();
-
 								setEnqueuePort(policy, outPort, sww);
-
+                            
 								// add the enqueue to the switch on the path ,
 								// source and destination
 								System.out.println("ADDing Policy: "
