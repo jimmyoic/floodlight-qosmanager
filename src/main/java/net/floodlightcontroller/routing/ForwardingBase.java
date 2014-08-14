@@ -680,8 +680,7 @@ public abstract class ForwardingBase
     @Override
     public boolean isCallbackOrderingPrereq(OFType type, String name) {
         return (type.equals(OFType.PACKET_IN) && 
-                (name.equals("topology") || 
-                 name.equals("devicemanager")));
+                (name.equals("QoSManager")));
     }
 
     @Override

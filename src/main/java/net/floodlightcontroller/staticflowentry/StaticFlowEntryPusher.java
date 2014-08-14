@@ -367,11 +367,11 @@ public class StaticFlowEntryPusher
             List<OFMessage> outQueue = new ArrayList<OFMessage>();
             for(String entry : entriesToAdd.get(dpid).keySet()) {
                 OFFlowMod newFlowMod = entriesToAdd.get(dpid).get(entry);
-                OFFlowMod oldFlowMod = entriesFromStorage.get(dpid).get(entry);
-                if (oldFlowMod != null) {  // remove any pre-existing rule
+                //OFFlowMod oldFlowMod = entriesFromStorage.get(dpid).get(entry);
+                /*if (oldFlowMod != null) {  // remove any pre-existing rule
                     oldFlowMod.setCommand(OFFlowMod.OFPFC_DELETE_STRICT);
                     outQueue.add(oldFlowMod);
-                }
+                }*/
                 if (newFlowMod != null) {
                     entriesFromStorage.get(dpid).put(entry, newFlowMod);
                     outQueue.add(newFlowMod);

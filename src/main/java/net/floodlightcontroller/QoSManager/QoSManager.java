@@ -90,6 +90,7 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 	protected IRestApiService restApi;
 	protected QoSPolicy policy;
 	public static final int FORWARDING_APP_ID = 2;
+	int testbit=0;
 
 	@Override
 	public String getName() {
@@ -100,8 +101,7 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 	@Override
 	public boolean isCallbackOrderingPrereq(OFType type, String name) {
 		// TODO Auto-generated method stub
-		return (type.equals(OFType.PACKET_IN) && (name.equals("topology") || name
-				.equals("devicemanager")));
+		return (type.equals(OFType.PACKET_IN) && name.equals("policy_manager") );
 	}
 
 	@Override
@@ -113,11 +113,25 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 	@Override
 	public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
 		// TODO Auto-generated method stub
-
+		OFPacketIn pi = (OFPacketIn)msg;
+		OFMatch m = new OFMatch();
+		m.loadFromPacket(pi.getPacketData(), pi.getInPort());
+		if(m.getNetworkSource()!=0&&m.getNetworkDestination()!=0){
+			System.out.println("Get Packet from " + sw.toString() + "\n" + m.toString());	
+		}
+		
+		
 		if (QoSService.isEnabled()) {
 			switch (msg.getType()) {
-			case PACKET_IN:
+			case PACKET_IN:{
+				/*if(m.getNetworkProtocol()!= 1 && m.getNetworkProtocol()!=2 && m.getNetworkDestination()!=0 && m.getNetworkSource()!=0){
+					updatePolicy((OFPacketIn)msg);
+					testbit=1;
+				}*/
+				
+				
 				checkPolicy(sw, (OFPacketIn) msg, cntx, false);
+			}
 			default:
 				break;
 			}
@@ -126,6 +140,33 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 		return Command.CONTINUE;
 	}
 
+	
+
+	private boolean confirmPolicy(QoSPolicy policy){ // check if there is exist match policy and decide to replace it or not
+		List<QoSPolicy> policies = QoSService.getPolicies();
+		Iterator<QoSPolicy> pIter = policies.iterator();
+		QoSPolicy p = new QoSPolicy();
+		
+		while (pIter.hasNext()) { // if there is a match policy, return in this block
+			p=pIter.next();
+			if(p.ipsrc != policy.ipsrc)  // same ipsrc?
+				continue;
+			if(p.protocol != -1 && p.protocol != policy.protocol) // same protocol?
+				continue;
+			if(p.tcpudpdstport != policy.tcpudpdstport) 
+				continue;
+			if(p.priority > policy.priority)
+				continue;
+			if(p.queue == policy.queue) // if that's just the same policy, do nothing
+				return false;
+			else if(p.queue !=policy.queue){ // replace the policy
+				QoSService.deletePolicy(p);
+				pIter.remove();
+				return true;
+			}
+		}
+		return true;  // if the match policy doesn't exist, return true
+	}
 	@Override
 	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
 		// TODO Auto-generated method stub
@@ -321,6 +362,7 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 								short outPort = switchPortList.get(indx)
 										.getPortId();
 								setEnqueuePort(policy, outPort, sww);
+								setTransportPort(policy,match);
                             
 								// add the enqueue to the switch on the path ,
 								// source and destination
@@ -357,6 +399,10 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 		p.sw = sw.getStringId();
 		p.enqueueport = outputPort;
 		return;
+	}
+	public void setTransportPort(QoSPolicy p, OFMatch match){
+		p.tcpudpdstport = match.getTransportDestination();
+		
 	}
 
 	public QoSPolicy checkIfPolicyIsThere(int src, int dst) { // test if there
@@ -453,6 +499,12 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 				continue;
 			else
 				r.protocol = p.protocol;
+			
+			if(p.tcpudpdstport == -1)
+				r.tcpudpdstport = match.getTransportDestination();
+			else if(p.tcpudpdstport != match.getTransportDestination())
+				continue;
+			else r.tcpudpdstport = p.tcpudpdstport;
 
 			matchPolicies.add(r);  // collect all the match policies into a list, later choose the policy with the highest priority
 		}

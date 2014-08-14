@@ -418,6 +418,20 @@ public class QoS implements IQoSService, IFloodlightModule,
         }catch(Exception e){
         	logger.error("Error adding default Best Effort {}", e);
         }
+        
+        enabled = true ;
+      /*  String qosJson = new String();
+        qosJson = "{\n \"ip-src\": \"10.0.0.1\",\n \"protocol\": \"6\",\n \"name\": \"Qoos.00:00:00:00:00:00:00:02\",\n \"ip-dst\": \"10.0.0.2\",\n \"queue\": \"2\",\n \"eth-type\": \"0x0800\"\n}\n"; // 設定Json
+        System.out.println(qosJson); // 印出
+        try{
+        QoSPolicy p = QoSPoliciesResource.jsonToPolicy(qosJson); // 轉
+        addPolicy(p);
+        }
+        catch (Exception e){
+        System.out.println("\n\n fail\n\n");
+        }
+        */
+        
 	}
 	
 	@Override
@@ -437,7 +451,7 @@ public class QoS implements IQoSService, IFloodlightModule,
         	//Temporary match from packet to compare
         	OFMatch tmpMatch = new OFMatch();
         	tmpMatch.loadFromPacket(packetData, OFPort.OFPP_NONE.getValue());
-        	checkIfQoSApplied(tmpMatch);
+    //    	checkIfQoSApplied(tmpMatch);
             break;
         default:
             return Command.CONTINUE;
@@ -823,7 +837,7 @@ public class QoS implements IQoSService, IFloodlightModule,
 			//add the matches and actions and return
 			fm.setMatch(match)
 				.setActions(actions)
-				.setIdleTimeout((short) 3)  // infinite
+				.setIdleTimeout((short) 0)  // infinite
 				.setHardTimeout((short) 5)  // infinite
 				.setBufferId(OFPacketOut.BUFFER_ID_NONE)
 				.setFlags((short) 0)
