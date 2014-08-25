@@ -11,27 +11,21 @@ import net.floodlightcontroller.core.FloodlightContext;
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.IOFMessageListener;
 import net.floodlightcontroller.core.IOFSwitch;
-import net.floodlightcontroller.core.IListener.Command;
 import net.floodlightcontroller.core.module.FloodlightModuleContext;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.core.module.IFloodlightModule;
 import net.floodlightcontroller.core.module.IFloodlightService;
-import net.floodlightcontroller.packet.IPv4;
 import net.floodlightcontroller.qos.IQoSService;
 import net.floodlightcontroller.qos.QoSPolicy;
-import net.floodlightcontroller.qos.QoSWebRoutable;
 import net.floodlightcontroller.restserver.IRestApiService;
 import net.floodlightcontroller.storage.IStorageSourceService;
 
 import org.openflow.protocol.OFMatch;
 import org.openflow.protocol.OFMessage;
 import org.openflow.protocol.OFPacketIn;
-import org.openflow.protocol.OFPort;
 import org.openflow.protocol.OFType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import sun.rmi.runtime.Log;
 
 public class PolicyManager implements IOFMessageListener, IFloodlightModule,
 		IPolicyManager {
@@ -240,6 +234,18 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule,
 		}
 	
 	}
+	private void deleteRelativePolicy(PolicyRestriction Restriction){
+		Iterator<QoSPolicy> sIter = QoSService.getPolicies().iterator();
+		while(sIter.hasNext()){
+			QoSPolicy p = sIter.next();
+			if(p.source.equals(Restriction.name)){
+				sIter.remove();
+				break; //done only one can exist
+			}
+		}
+		
+		
+	}
 
 	private boolean checkIfRestrictionExists(PolicyRestriction Restriction,
 			List<PolicyRestriction> Restrictions) {
@@ -263,21 +269,26 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule,
 					continue;
 			}
 			if (r.protocol != -1) {
+				System.out.println(r.protocol + "   " + match.getNetworkProtocol() + "\n" );
 				if (r.protocol != match.getNetworkProtocol())
 					continue;
 			}
+			System.out.println("second  \n\n");
 			if (r.tos != -1) {
 				if (r.tos != match.getNetworkTypeOfService())
 					continue;
 			}
+			System.out.println("fasdasd  \n\n");
 			if (r.tcpudpsrcport != -1) {
 				if (r.tcpudpsrcport != match.getTransportSource())
 					;
 			}
+			System.out.println("ewter  \n\n");
 			if (r.tcpudpdstport != -1) {
 				if (r.tcpudpdstport != match.getTransportDestination())
 					continue;
 			}
+			System.out.println("asdqwecft  \n\n");
 
 			matchRestrictions.add(r);
 		}

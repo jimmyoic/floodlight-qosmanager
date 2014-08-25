@@ -4,16 +4,13 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
-import net.floodlightcontroller.QoSManager.QoSManagerResource;
-import net.floodlightcontroller.packet.IPv4;
-import net.floodlightcontroller.qos.IQoSService;
-import net.floodlightcontroller.qos.QoSPolicy;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.openflow.util.U16;
+import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
@@ -60,7 +57,7 @@ public class RestrictionResource extends ServerResource {
 		
 		return ("{\"status\" : \"" + status + "\"}");
 	}
-	
+	@Delete
 	 public String delete(String qosJson) {
 		 IPolicyManager PM = (IPolicyManager) getContext().getAttributes().get(
 					IPolicyManager.class.getCanonicalName());
