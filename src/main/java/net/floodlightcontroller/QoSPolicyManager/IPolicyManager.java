@@ -17,7 +17,8 @@ public interface IPolicyManager extends IFloodlightService {
 	
 	public QoSPolicy restrictionToPolicy(OFMatch match, PolicyRestriction r);
 	
-	public List<PolicyRestriction> getPolicies();
+	public List<PolicyRestriction> getRestrictions();
 	
+	public void deleteRestriction(PolicyRestriction restriction);
 	
 }

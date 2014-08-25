@@ -602,7 +602,6 @@ public class QoS implements IQoSService, IFloodlightModule,
 		policyEntry.put(COLUMN_PRIORITY, Short.toString(policy.priority));
 		policyEntry.put(COLUMN_SERVICE, policy.service);
 		storageSource.insertRow(TABLE_NAME, policyEntry);
-		
 	}
 	
 	public void addPolicyToSwitch(QoSPolicy policy) {

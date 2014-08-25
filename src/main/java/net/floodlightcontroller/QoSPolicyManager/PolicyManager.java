@@ -33,14 +33,15 @@ import org.slf4j.LoggerFactory;
 
 import sun.rmi.runtime.Log;
 
-public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPolicyManager {
+public class PolicyManager implements IOFMessageListener, IFloodlightModule,
+		IPolicyManager {
 
 	protected IStorageSourceService storageSource;
 	protected IQoSService QoSService;
 	protected IRestApiService restApi;
 	protected List<PolicyRestriction> restrictions; // Synchronized
 	public static final String TABLE_NAME = "controller_policy_restriction";
-	public static final String COLUMN_RID = "restrictionid";
+	public static final String COLUMN_RID = "restriction-id";
 	public static final String COLUMN_NAME = "name";
 	public static final String COLUMN_MATCH_PROTOCOL = "protocol";
 	public static final String COLUMN_MATCH_ETHTYPE = "eth-type";
@@ -52,7 +53,7 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 	public static String ColumnNames[] = { COLUMN_RID, COLUMN_NAME,
 			COLUMN_MATCH_PROTOCOL, COLUMN_MATCH_ETHTYPE,
 			COLUMN_MATCH_TCPUDP_SRCPRT, COLUMN_MATCH_TCPUDP_DSTPRT,
-			COLUMN_NW_TOS, COLUMN_MATCH_PRIORITY , COLUMN_MATCH_QUEUE };
+			COLUMN_NW_TOS, COLUMN_MATCH_PRIORITY, COLUMN_MATCH_QUEUE };
 
 	protected IFloodlightProviderService floodlightProvider;
 	protected static Logger logger;
@@ -79,22 +80,18 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 	@Override
 	public Collection<Class<? extends IFloodlightService>> getModuleServices() {
 		// TODO Auto-generated method stub
-		Collection<Class<? extends IFloodlightService>> l = 
-                new ArrayList<Class<? extends IFloodlightService>>();
-        l.add(IPolicyManager.class);
-        return l;
+		Collection<Class<? extends IFloodlightService>> l = new ArrayList<Class<? extends IFloodlightService>>();
+		l.add(IPolicyManager.class);
+		return l;
 	}
 
 	@Override
 	public Map<Class<? extends IFloodlightService>, IFloodlightService> getServiceImpls() {
 		// TODO Auto-generated method stub
-		Map<Class<? extends IFloodlightService>,
-        IFloodlightService> m = 
-        new HashMap<Class<? extends IFloodlightService>,
-        IFloodlightService>();
-        // We are the class that implements the service
-        m.put(IPolicyManager.class, this);
-        return m;
+		Map<Class<? extends IFloodlightService>, IFloodlightService> m = new HashMap<Class<? extends IFloodlightService>, IFloodlightService>();
+		// We are the class that implements the service
+		m.put(IPolicyManager.class, this);
+		return m;
 	}
 
 	@Override
@@ -106,7 +103,8 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 		l.add(IPolicyManager.class);
 		return l;
 	}
-	public List<PolicyRestriction> getPolicies() {
+
+	public List<PolicyRestriction> getRestrictions() {
 		return this.restrictions;
 	}
 
@@ -135,35 +133,42 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 	public net.floodlightcontroller.core.IListener.Command receive(
 			IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
 		// TODO Auto-generated method stub
-		OFPacketIn pi = (OFPacketIn)msg;
+		OFPacketIn pi = (OFPacketIn) msg;
 		if (!QoSService.isEnabled()) {
 			return Command.CONTINUE;
 		}
-		//logger.debug("Message Recieved: Type - {}",msg.getType().toString());
-		//Listen for Packets that match Policies
+		// logger.debug("Message Recieved: Type - {}",msg.getType().toString());
+		// Listen for Packets that match Policies
 		switch (msg.getType()) {
-        case PACKET_IN:
-        	OFMatch match = new OFMatch();
-        	match.loadFromPacket(pi.getPacketData(), pi.getInPort());
-        	generatePolicy(match);
-            break;
-        default:
-            return Command.CONTINUE;
-        }
-		 return Command.CONTINUE;
+		case PACKET_IN:
+			OFMatch match = new OFMatch();
+			match.loadFromPacket(pi.getPacketData(), pi.getInPort());
+			generatePolicy(match);
+			break;
+		default:
+			return Command.CONTINUE;
+		}
+		return Command.CONTINUE;
 	}
 
 	public void generatePolicy(OFMatch match) {
-		if(match.getNetworkProtocol()== 1 || match.getNetworkProtocol()==2 || match.getNetworkDestination()==0 || match.getNetworkSource()==0)
+		if (match.getNetworkProtocol() == 1 || match.getNetworkProtocol() == 2
+				|| match.getNetworkDestination() == 0
+				|| match.getNetworkSource() == 0)
 			return;
 		logger.info("checking the match restrictions...");
 		PolicyRestriction r = getMatchRestriction(match);
-		if(r==null) return;
+		if (r == null){
+			logger.info("no match restrictions");
+			return;
+		}
 		logger.info("Generating Policy");
-		QoSPolicy policy = restrictionToPolicy(match, r);
-		System.out.println(policy.ipdst + " " + policy.ipdst + " " + policy.protocol + " " + policy.priority + " " + policy.tcpudpdstport + " " + policy.tcpudpsrcport + "\n\n");
+		QoSPolicy policy = restrictionToPolicy(match, r); // if generated policy
+															// exist, it should
+															// be disregarded in
+															// the method
+															// "addpolicy"
 		QoSService.addPolicy(policy);
-		
 	}
 
 	public synchronized void addRestriction(PolicyRestriction restriction) {
@@ -207,6 +212,34 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 		storageSource.insertRow(TABLE_NAME, restrictionEntry);
 
 	}
+	
+	public synchronized void deleteRestriction(PolicyRestriction restriction) {
+		Map<String, Object> restrictionEntry = new HashMap<String, Object>();
+		restrictionEntry.put(COLUMN_RID,
+				Long.toString(restriction.restrictionid));
+		restrictionEntry.put(COLUMN_NAME, restriction.name);
+		restrictionEntry.put(COLUMN_MATCH_PROTOCOL,
+				Short.toString(restriction.protocol));
+		restrictionEntry.put(COLUMN_MATCH_ETHTYPE,
+				Short.toString(restriction.ethtype));
+		restrictionEntry.put(COLUMN_MATCH_TCPUDP_SRCPRT,
+				Short.toString(restriction.tcpudpsrcport));
+		restrictionEntry.put(COLUMN_MATCH_TCPUDP_DSTPRT,
+				Short.toString(restriction.tcpudpdstport));
+		restrictionEntry.put(COLUMN_MATCH_TCPUDP_DSTPRT,
+				Short.toString(restriction.tcpudpdstport));
+	
+		storageSource.deleteRow(TABLE_NAME, restrictionEntry);
+		Iterator<PolicyRestriction> sIter = this.restrictions.iterator();
+		while(sIter.hasNext()){
+			PolicyRestriction pm = sIter.next();
+			if(pm.restrictionid == restriction.restrictionid){
+				sIter.remove();
+				break; //done only one can exist
+			}
+		}
+	
+	}
 
 	private boolean checkIfRestrictionExists(PolicyRestriction Restriction,
 			List<PolicyRestriction> Restrictions) {
@@ -225,8 +258,6 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 		Iterator<PolicyRestriction> pIter = restrictions.iterator();
 		while (pIter.hasNext()) {
 			PolicyRestriction r = pIter.next();
-			System.out.println(r.ethtype + " " + r.tos + " " + r.protocol + " " + r.tcpudpdstport + " " + r.tcpudpsrcport + "\n\n");
-			System.out.println(match.toString());
 			if (r.ethtype != -1) {
 				if (r.ethtype != match.getDataLayerType())
 					continue;
@@ -250,8 +281,7 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 
 			matchRestrictions.add(r);
 		}
-		if (matchRestrictions.isEmpty()){
-			System.out.println("null\n\n\n\n");
+		if (matchRestrictions.isEmpty()) {
 			return null;
 		}
 		pIter = matchRestrictions.iterator();
@@ -262,7 +292,6 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 			if (r.priority > target.priority)
 				target = r;
 		}
-		System.out.println("target\n\n\n\n\n");
 		return target;
 	}
 
@@ -270,22 +299,35 @@ public class PolicyManager implements IOFMessageListener, IFloodlightModule, IPo
 		// TODO Auto-generated method stub
 		QoSPolicy policy = new QoSPolicy();
 		policy.ipsrc = match.getNetworkSource();
-		if(r.ethtype != -1)
+		String name = r.name;
+		if (r.ethtype != -1) {
 			policy.ethtype = r.ethtype;
-		else 
-			policy.ethtype = match.getDataLayerType(); //default 
-		if (r.tcpudpdstport != -1)
+			name = name + " ethtype(" + r.ethtype + ")";
+		} else {
+			policy.ethtype = match.getDataLayerType(); // default
+
+		}
+		if (r.tcpudpdstport != -1){
 			policy.tcpudpdstport = r.tcpudpdstport;
-		if (r.tcpudpsrcport != -1)
+			name = name + " TcpDstPort(" + r.tcpudpdstport + ")";
+		}
+		if (r.tcpudpsrcport != -1){
 			policy.tcpudpsrcport = r.tcpudpsrcport;
-		if(r.protocol != -1)
+			name = name + " TcpSrcPort(" + r.tcpudpsrcport + ")";
+		}
+		if (r.protocol != -1){
 			policy.protocol = r.protocol;
-		else 
-			policy.protocol = match.getNetworkProtocol(); //default
-		if(r.priority != -1)
+			name = name + " Protocol(" + r.protocol + ")";
+		}
+		else
+			policy.protocol = match.getNetworkProtocol(); // default
+		if (r.priority != -1){
 			policy.priority = r.priority;
+			name = name + " Priority(" + r.protocol + ")";
+		}
 		policy.queue = r.queue;
-		policy.name = "test" + String.valueOf(r.restrictionid) + policy.ipsrc;
+		policy.name = name;
+		policy.source = r.name;  // if user directly add policy by GUI this field should be null in that policy
 		return policy;
 	}
 

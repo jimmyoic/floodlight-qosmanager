@@ -31,7 +31,7 @@ public class RestrictionResource extends ServerResource {
 				IPolicyManager.class.getCanonicalName());
 		// gets the list of policies currently being implemented
 		if(PM!=null)
-		return PM.getPolicies();
+		return PM.getRestrictions();
 		else return "error\n";
 	}
 	
@@ -49,17 +49,58 @@ public class RestrictionResource extends ServerResource {
     		return "{\"status\" : \"Error! Could not parse policy, see log for details.\"}";
     	}
 		String status = "add Restriction";
-		//if(checkIfRestrictionExists(restriction,PM.getPolicies())){
-    	//	status = "Error!, This policy already exists!";
-    	//	logger.error(status);
-    	//}
-		//else{
+		if(checkIfRestrictionExists(restriction,PM.getRestrictions())){
+    		status = "Error!, This policy already exists!";
+    		logger.error(status);
+    	}
+		else{
 			PM.addRestriction(restriction);
 		
-		//}
+		}
 		
 		return ("{\"status\" : \"" + status + "\"}");
 	}
+	
+	 public String delete(String qosJson) {
+		 IPolicyManager PM = (IPolicyManager) getContext().getAttributes().get(
+					IPolicyManager.class.getCanonicalName());
+			PolicyRestriction restriction;
+	    	
+	    	try{
+	    		restriction = jsonToRestriction(qosJson);
+	    	}
+	    	catch(IOException e){
+	    		logger.debug("Error Parsing QoS Policy to JSON: {}, Error: {}", qosJson, e);
+	    		e.printStackTrace();
+	    		return "{\"status\" : \"Error! Could not parse policy, see log for details.\"}";
+	    	}
+	    	String status = null;
+			
+				boolean found = false;
+				Iterator<PolicyRestriction> sIter = PM.getRestrictions().iterator();
+				while(sIter.hasNext()){
+					PolicyRestriction pm = sIter.next();
+					if(pm.restrictionid == restriction.restrictionid){
+						restriction = pm; //returned the entire policy
+						found = true;
+						break;
+					}
+				}
+		
+				if(!found){
+					status = "Error! Cannot delete a rule with this ID or NAME, does not exist.";
+					logger.error(status);
+				}
+				else{
+					PM.deleteRestriction(restriction);
+					status = "Type Of Service Service-ID: "+restriction.restrictionid+" Deleted";
+	    			}
+			
+			
+			return ("{\"status\" : \"" + status + "\"}");
+	    }
+	
+	
 	
 	
 	public static PolicyRestriction jsonToRestriction(String rJson) throws IOException{

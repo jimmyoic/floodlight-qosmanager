@@ -15,7 +15,7 @@ public class PolicyRestriction implements Comparable<PolicyRestriction> {
 	public short tcpudpdstport;
 	public short priority=0;
 	public short queue;
-	
+		
 	public PolicyRestriction(){
 		this.restrictionid = 0;
 		this.name = null;

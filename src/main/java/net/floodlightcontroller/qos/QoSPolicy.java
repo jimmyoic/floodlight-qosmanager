@@ -38,6 +38,7 @@ public class QoSPolicy implements Comparable<QoSPolicy>{
 	public String ethdst;
 	public short tcpudpsrcport;
 	public short tcpudpdstport;
+	public String source;            // record which restriction generate the policy
 	
 	//Can be "all", "dpid" or [TODO: list of "dpid,dpid"]
 	//TODO Morph to use a String[] of Switches
@@ -74,6 +75,7 @@ public class QoSPolicy implements Comparable<QoSPolicy>{
 		this.enqueueport = -1;
 		this.service = null;
 		this.priority = 32767;
+		this.source = null;
 		
 	}
 	
