@@ -420,6 +420,7 @@ public class QoS implements IQoSService, IFloodlightModule,
         }
         
         enabled = true ;
+        // test
       /*  String qosJson = new String();
         qosJson = "{\n \"ip-src\": \"10.0.0.1\",\n \"protocol\": \"6\",\n \"name\": \"Qoos.00:00:00:00:00:00:00:02\",\n \"ip-dst\": \"10.0.0.2\",\n \"queue\": \"2\",\n \"eth-type\": \"0x0800\"\n}\n"; // 設定Json
         System.out.println(qosJson); // 印出
@@ -558,8 +559,10 @@ public class QoS implements IQoSService, IFloodlightModule,
 		logger.debug("Adding Policy to List and Storage");
 		//create the UID
 		policy.policyid = policy.genID();
-		if (checkIfPolicyExists(policy, this.policies))
+		if (checkIfPolicyExists(policy, this.policies)){
+			logger.info("Policy exist, acquire disregarded.");
 			return;
+		}
 		int p = 0;
 		for (p = 0; p < this.policies.size(); p++){
 			//check if empy

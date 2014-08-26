@@ -124,12 +124,6 @@ public class QoSManager implements IFloodlightModule, IOFMessageListener,
 		if (QoSService.isEnabled()) {
 			switch (msg.getType()) {
 			case PACKET_IN:{
-				/*if(m.getNetworkProtocol()!= 1 && m.getNetworkProtocol()!=2 && m.getNetworkDestination()!=0 && m.getNetworkSource()!=0){
-					updatePolicy((OFPacketIn)msg);
-					testbit=1;
-				}*/
-				
-				
 				checkPolicy(sw, (OFPacketIn) msg, cntx, false);
 			}
 			default:

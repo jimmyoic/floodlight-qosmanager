@@ -138,7 +138,7 @@ public class RestrictionResource extends ServerResource {
     				//back to beginning of loop
     				continue;
     			}
-    			if (tmpS == "restrictionid-id" || tmpS == "sid" ){
+    			if (tmpS == "restriction-id" || tmpS == "sid" ){
     				restriction.restrictionid = Long.parseLong(jp.getText());
 					//logger.info("[JSON PARSER]Policy Name: {}" , jp.getText());	
     			}
