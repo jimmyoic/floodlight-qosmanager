@@ -20,6 +20,12 @@
         $("#queue").val("");
         $("#priority").val("");
      }
+     function reloadPolicy() {
+        var tl = new ToolCollection();
+        $('#content').html(new ToolListView({model:tl}).render().el);
+        $('ul.nav > li').removeClass('active');
+        $('li > a[href*="/tools"]').parent().addClass('active');      
+     }
    
 
       var Create = {
@@ -94,6 +100,8 @@
                 async: false,
                 success:function(msg) {
                         console.log(msg);
+                        // reloadPolicy();
+                        alert("Success!!!");
                 },
         });
         
@@ -128,13 +136,16 @@ window.ToolListView = Backbone.View.extend({
         	
     	},
 
+
 	render:function (eventName) {
+      // console.log('render call lalala~~~~');
        		$(this.el).html(this.template({ntools:tl.length}));
 			_.each(this.model.models, function (t) {
 				$(this.el).find('#tools > tbody:first-child').append(new ToolsListItemView({model:t}).render().el);
 			}, this);
 			return this;
 	},
+
 });
 
 window.ToolsListItemView = Backbone.View.extend({
@@ -177,20 +188,29 @@ window.ToolDetailsView = Backbone.View.extend({
     },
 
     render:function (event) {
+        var model = this.model;
         $(this.el).html(this.template(this.model.toJSON()));
         if (!event) var event = window.event;
     	if (event.target) targ = event.target;
     	if(targ.name != null){
         	//console.log(targ.name);
         	if(targ.name == "Quality" || targ.name == 'quality of service'){
-        		$(this.el).find('#qos').show();
-         		//Services & Policies
-       	 		$(this.el).find('#services').html(new ServiceListView({model:this.model.services}).render().el);
-				$(this.el).find('#policies').html(new PolicyListView({model:this.model.policies}).render().el);
-			}
+            $(this.el).find('#qos').show();
+            //Services & Policies
+            $(this.el).find('#services').html(new ServiceListView({model:this.model.services}).render().el);
+			     	$(this.el).find('#policies').html(new PolicyListView({model:this.model.policies}).render().el);
+            setInterval(function () {
+              console.log("policy update lala ~~");
+              clearPolicy(model.policies);            
+              // console.log("before leng: " + model.policies.length);
+              getPolicies(model.policies);
+              // console.log("after leng: " + model.policies.length);
+            }, 3000);
+
+      		}
 			if(targ.name == "Firewall"){
-			console.log("Firewall specific load");
-			}
+    		console.log("Firewall specific load");
+	  	}
 		}
 		return this;
     },
@@ -295,4 +315,63 @@ window.ToolDetailsView = Backbone.View.extend({
 });
 
 
+function getPolicies(plcs){
+
+      console.log("Loading Policies..");
+      var self = this;
+        $.ajax({
+            url:hackBase + "/wm/qos/policy/json",
+            dataType:"json",
+            success:function (data) {
+               //console.log(data);
+                _.each(data, function(p){
+                  var policy = new Object();
+                  policy.sid = p["policyid"]
+                  policy.name = p["name"]
+                  policy.ethtype = p["ethtype"]
+                  policy.protocol = p["protocol"]
+                  policy.ingressport = p["ingressport"]
+                  policy.ipdst = p["ipdst"]
+                  policy.ipsrc = p["ipsrc"]
+                  policy.tos = p["tos"]
+                  policy.vlanid = p["vlanid"]
+                  policy.ethsrc = p["ethsrc"]
+                  policy.ethdst = p["ethdst"]
+                  policy.tcpudpdstport = p["tcpudpdstport"]
+                  policy.tcpudpsrcport = p["tcpudpsrcport"]
+                  policy.sw = p["sw"]
+                  policy.queue = p["queue"]
+                  policy.enqueueport = p["enqueueport"]
+                  policy.service = p["service"]
+                  policy.priority = p["priority"]
+          
+                  //console.log(p);
+                  plcs.add({sid: policy.sid,
+                        name: policy.name,
+                        ethtype: policy.ethtype,
+                        protocol: policy.protocol,
+                        ingressport: policy.ingressport,
+                        ipdst: policy.ipdst,
+                        ipsrc: policy.ipsrc,
+                        tos: policy.tos,
+                        vlanid: policy.vlanid,
+                        ethsrc: policy.ethsrc,
+                        ethdst: policy.ethdst,
+                        tcpudpdstport: policy.tcpudpdstport,
+                        tcpudpsrcport: policy.tcpudpsrcport,
+                        sw: policy.sw,
+                        queue: policy.queue,
+                        enqueueport: policy.enqueueport,
+                        service: policy.service,
+                        priority: policy.priority});
+              });
+            }
+        });
+}
+
+function clearPolicy(plcs) {
+
+  _.invoke(plcs.toArray(), 'destroy');
+
+}
 

@@ -50,8 +50,6 @@ window.PolicyListItemView = Backbone.View.extend({
         
     },
     delete:function(event){
-       
-         
          $.ajax({
                 type: 'Delete',
                 url: hackBase + "/wm/manager/qos/json",
@@ -63,17 +61,7 @@ window.PolicyListItemView = Backbone.View.extend({
                         alert("delete success!");
                 },
         });
-
-
-
-
-
-
-
      },
-    
-    
-
 });
 
 window.PolicyListView = Backbone.View.extend({
@@ -81,18 +69,17 @@ window.PolicyListView = Backbone.View.extend({
     initialize:function () {
         this.template = _.template(tpl.get('policy-list'));
         this.model.bind("change", this.render, this);
+        this.model.bind("add", this.render, this);
     },
 
     render:function (eventName) {
+        console.log("policy list view render lalala ~~~");
         $(this.el).html(this.template(this.model.toJSON()));
         _.each(this.model.models, function (p) {
             $(this.el).find('#policy-table > tbody:first-child').append(new PolicyListItemView({model:p}).render().el);
         }, this);
         return this;
     }
-    
-    
-    
 
 });
 
