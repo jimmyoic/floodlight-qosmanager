@@ -20,13 +20,16 @@ package net.floodlightcontroller.core.web;
 import java.lang.Thread.State;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import net.floodlightcontroller.core.IFloodlightProviderService;
 import net.floodlightcontroller.core.types.MacVlanPair;
 
 import org.openflow.protocol.OFFeaturesReply;
+import org.openflow.protocol.statistics.OFPortStatisticsReply;
 import org.openflow.protocol.statistics.OFStatistics;
 import org.openflow.protocol.statistics.OFStatisticsType;
 import org.openflow.util.HexString;
@@ -126,7 +129,20 @@ public class AllSwitchStatisticsResource extends SwitchResourceBase {
                 log.error("Interrupted while waiting for statistics", e);
             }
         }
+         for(Object key: model.keySet()){
+        	 CopyOnWriteArrayList<?> CA = (CopyOnWriteArrayList<?>)model.get(key);
+        	 Iterator<?> it = CA.iterator();
+        	 while(it.hasNext()){
+        		 OFPortStatisticsReply os = (OFPortStatisticsReply)it.next();
+        		 System.out.println(key + "  " + os.getPortNumber() + "  " + os.getReceiveBytes() + "   " + os.getTransmitBytes()  + "\n\n");
+        		 
+        		 
+        	 }
+        	// System.out.println(key + "   " + model.get(key).getClass() + "\n\n");
         
+        	 
+         }
+          
         return model;
     }
     

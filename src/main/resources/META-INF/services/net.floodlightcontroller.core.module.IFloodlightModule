@@ -27,3 +27,4 @@ net.floodlightcontroller.qos.QoS
 net.floodlightcontroller.firewall.Firewall
 net.floodlightcontroller.QoSManager.QoSManager
 net.floodlightcontroller.QoSPolicyManager.PolicyManager
+net.floodlightcontroller.trafficmonitor.TrafficMonitor

@@ -4,7 +4,7 @@ import org.restlet.Context;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
-import net.floodlightcontroller.QoSManager.QoSManagerResource;
+
 import net.floodlightcontroller.restserver.RestletRoutable;
 
 public class RestrictionWebRoutable implements RestletRoutable {

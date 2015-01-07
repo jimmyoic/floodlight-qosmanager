@@ -75,13 +75,13 @@ public class Forwarding extends ForwardingBase implements IFloodlightModule {
         // If a decision has been made we obey it
         // otherwise we just forward
         if (decision != null) {
-            if (log.isTraceEnabled()) {
+            {
                 log.trace("Forwaring decision={} was made for PacketIn={}",
                         decision.getRoutingAction().toString(),
                         pi);
             }
             
-            switch(decision.getRoutingAction()) {
+            switch(decision.getRoutingAction()) {	
                 case NONE:
                     // don't do anything
                     return Command.CONTINUE;
@@ -163,7 +163,7 @@ public class Forwarding extends ForwardingBase implements IFloodlightModule {
                                  boolean requestFlowRemovedNotifn) {    
         OFMatch match = new OFMatch();
         match.loadFromPacket(pi.getPacketData(), pi.getInPort());
-
+        
         // Check if we have the location of the destination
         IDevice dstDevice = 
                 IDeviceService.fcStore.

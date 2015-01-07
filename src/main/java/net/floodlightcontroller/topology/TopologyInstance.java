@@ -120,7 +120,6 @@ public class TopologyInstance {
     }
 
     public void compute() {
-
         // Step 1: Compute clusters ignoring broadcast domain links
         // Create nodes for clusters in the higher level topology
         // Must ignore blocked links.
@@ -548,7 +547,7 @@ public class TopologyInstance {
 
     protected Route buildroute(RouteId id, long srcId, long dstId) {
         NodePortTuple npt;
-
+     
         LinkedList<NodePortTuple> switchPorts =
                 new LinkedList<NodePortTuple>();
 
@@ -579,7 +578,7 @@ public class TopologyInstance {
             }
         }
         // else, no path exists, and path equals null
-
+       
         Route result = null;
         if (switchPorts != null && !switchPorts.isEmpty()) 
             result = new Route(id, switchPorts);
